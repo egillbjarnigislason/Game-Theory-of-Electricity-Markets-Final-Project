@@ -26,7 +26,15 @@ def build_constraints(case):
         m.angle.add((math.radians(br.angmin), diff, math.radians(br.angmax)))
 
 
+    # demand constraints
+    m.demand = pyo.ConstraintList()
+    for b, bus in enumerate(case.bus):
+        # sum of generation at bus b - demand at bus b = sum of flows into bus b
+        gen_at_bus = [g for g, gen in enumerate(case.gen) if gen.gen_bus == bus.bus_i]
+        flow_into_bus = [l for l, br in enumerate(case.branch) if br.tbus == bus.bus_i]
+        flow_out_of_bus = [l for l, br in enumerate(case.branch) if br.fbus == bus.bus_i]
 
+        m.demand.add(sum(m.x[g] for g in gen_at_bus) - bus.Pd == sum(m.f[l] for l in flow_into_bus) - sum(m.f[l] for l in flow_out_of_bus))
 
 
 
