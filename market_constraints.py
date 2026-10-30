@@ -30,7 +30,7 @@ def build_constraints(case):
     m.demand = pyo.ConstraintList()
     for b, bus in enumerate(case.bus):
         # sum of generation at bus b - demand at bus b = sum of flows into bus b
-        gen_at_bus = [g for g, gen in enumerate(case.gen) if gen.gen_bus == bus.bus_i]
+        gen_at_bus = [g for g, gen in enumerate(case.gen) if gen.bus == bus.bus_i]
         flow_into_bus = [l for l, br in enumerate(case.branch) if br.tbus == bus.bus_i]
         flow_out_of_bus = [l for l, br in enumerate(case.branch) if br.fbus == bus.bus_i]
 
