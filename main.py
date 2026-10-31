@@ -4,6 +4,7 @@ import random
 from read_ieee_case import read_case
 from market_constraints import build_constraints
 from golden_search import golden_search
+from separation_oracle import separation_oracle
 import market_clear as mc
 import finite_LP as flp
 
@@ -62,7 +63,7 @@ while epsilon < val and time.time() - start_time < max_time_in_seconds:
     v = flp.solve_finite_LP(flpModel, w)[1]
 
     
-    (new_a, val) = (None, 0) # TODO separation oracle
+    (new_a, val) = separation_oracle(p, v, w) # TODO implement it properly
 
     H_subset.add(new_a)
     flp.add_action_to_LP(flpModel, new_a, C, c, a_star)
