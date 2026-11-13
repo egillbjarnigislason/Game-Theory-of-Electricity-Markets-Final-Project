@@ -11,6 +11,7 @@ def build_constraints(case):
     m.x = pyo.Var(m.G)                                   # generator output, MW
     m.theta = pyo.Var([b.bus_i for b in case.bus])       # bus angle, rad
     m.f = pyo.Var(range(len(case.branch)))               # line flow, MW
+    m.dual = pyo.Suffix(direction=pyo.Suffix.IMPORT)
 
     # capacity constraints
     m.capacity = pyo.ConstraintList()
@@ -20,12 +21,22 @@ def build_constraints(case):
     # network constraints
     m.flow = pyo.ConstraintList()
     m.angle = pyo.ConstraintList()
+    m.line_capacity = pyo.ConstraintList()
     for l, br in enumerate(case.branch):
         diff = m.theta[br.fbus] - m.theta[br.tbus]
-        # phase angle constr
-        m.flow.add(m.f[l] == case.baseMVA / br.x * diff) # unit conversion
-        # max phase angle
+        if not br.status:
+            m.flow.add(m.f[l] == 0)
+            continue
+
+        tap = br.ratio if br.ratio else 1.0
+        susceptance = case.baseMVA / (br.x * tap)
+        phase_shift = math.radians(br.angle)
+        m.flow.add(
+            m.f[l] == susceptance * (diff - phase_shift)
+        ) # unit conversion
         m.angle.add((math.radians(br.angmin), diff, math.radians(br.angmax)))
+        if br.rateA > 0:
+            m.line_capacity.add((-br.rateA, m.f[l], br.rateA))
 
 
     # demand constraints
@@ -36,7 +47,12 @@ def build_constraints(case):
         flow_into_bus = [l for l, br in enumerate(case.branch) if br.tbus == bus.bus_i]
         flow_out_of_bus = [l for l, br in enumerate(case.branch) if br.fbus == bus.bus_i]
 
-        m.demand.add(sum(m.x[g] for g in gen_at_bus) - bus.Pd == sum(m.f[l] for l in flow_out_of_bus) - sum(m.f[l] for l in flow_into_bus))
+        m.demand.add(
+            sum(m.x[g] for g in gen_at_bus)
+            - sum(m.f[l] for l in flow_out_of_bus)
+            + sum(m.f[l] for l in flow_into_bus)
+            == bus.Pd
+        )
 
 
 
