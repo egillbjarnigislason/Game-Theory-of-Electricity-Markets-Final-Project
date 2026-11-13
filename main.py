@@ -9,20 +9,21 @@ import finite_LP as flp
 import separation_oracle as so
 
 
-ieee_file = "ieee data/pglib_opf_case30_ieee.m"
-max_time_in_seconds = 1
+ieee_file = "ieee data/pglib_opf_case57_ieee.m"
+max_time_in_seconds = 200
 accuracy = 10**-2
 starting_H_subset_size = 10 
-
+minimum_bid_val = 10**-3
+max_coefficient_for_bid = 10
 
 
 
 case = read_case(ieee_file) 
 
-min_a = 10**-3
-max_a = max(0.7, max([case.gencost[g].params[-3] for g in range(len(case.gen))]))
-min_b = 10**-3
-max_b = max(120, max([case.gencost[g].params[-2] for g in range(len(case.gen))]))
+min_a = minimum_bid_val
+max_a = max(0.7, max_coefficient_for_bid * max([case.gencost[g].params[-3] for g in range(len(case.gen))]))
+min_b = minimum_bid_val
+max_b = max(120, max_coefficient_for_bid * max([case.gencost[g].params[-2] for g in range(len(case.gen))]))
 
 #print(case)
 
@@ -76,6 +77,7 @@ while epsilon < val and time.time() - start_time < max_time_in_seconds:
     (p, v) = flp.solve_finite_LP(flpModel, w)
 
     (new_a, val) = so.separation_oracle(separation_oracle_model, p, v, w, epsilon)
+    print("Val: ", val)
 
     H_subset.add(new_a)
     flp.add_action_to_LP(flpModel, new_a, C, c, a_star)

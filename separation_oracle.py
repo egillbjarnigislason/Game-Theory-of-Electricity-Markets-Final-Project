@@ -9,6 +9,21 @@ def replace_action(a, i, w, a_i_true):
     return tuple(new_a)
 
 
+def _load_solver_solution(model, results):
+    if not results.solution:
+        return False
+
+    status = results.solver.status
+    if status == pyo.SolverStatus.aborted:
+        # This incumbent is intentionally accepted when it satisfies BestObjStop.
+        results.solver.status = pyo.SolverStatus.ok
+    try:
+        model.solutions.load_from(results)
+    finally:
+        results.solver.status = status
+    return True
+
+
 def runModel(model, addprint=False, BestObjStop=None):
     solver = pyo.SolverFactory("gurobi")
     if not solver.available():
@@ -18,11 +33,18 @@ def runModel(model, addprint=False, BestObjStop=None):
     if BestObjStop is not None:
         solver.options["BestObjStop"] = BestObjStop
 
-    results = solver.solve(model, tee=addprint)
+    results = solver.solve(model, tee=addprint, load_solutions=False)
+    has_solution = _load_solver_solution(model, results)
     termination = results.solver.termination_condition
     if termination == pyo.TerminationCondition.optimal:
+        if not has_solution:
+            raise RuntimeError(
+                "Optimal separation oracle solve returned no solution."
+            )
         return model
-    incumbent = pyo.value(model.objective, exception=False)
+    incumbent = (
+        pyo.value(model.objective, exception=False) if has_solution else None
+    )
     if (
         BestObjStop is not None
         and incumbent is not None
@@ -31,9 +53,13 @@ def runModel(model, addprint=False, BestObjStop=None):
         return model
     if BestObjStop is not None:
         solver.options.pop("BestObjStop", None)
-        results = solver.solve(model, tee=addprint)
+        results = solver.solve(model, tee=addprint, load_solutions=False)
         termination = results.solver.termination_condition
         if termination == pyo.TerminationCondition.optimal:
+            if not _load_solver_solution(model, results):
+                raise RuntimeError(
+                    "Optimal separation oracle solve returned no solution."
+                )
             return model
     raise RuntimeError(
         f"Separation oracle solve failed: {termination}. Check the KKT model."
