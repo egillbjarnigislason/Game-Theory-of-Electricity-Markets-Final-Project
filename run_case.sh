@@ -23,8 +23,7 @@ SOFT_LIMIT="${SOFT_LIMIT:-10800}"
 cd "$LS_SUBCWD" || exit 1        # directory bsub was called from (the repo folder)
 
 module load python3/3.11.13      # modules do not persist between sessions, so load them in the job
-# If DTU has a Gurobi module (check: module avail gurobi) load it here, e.g.:
-# module load gurobi/<version>
+module load gurobipy/gurobi-13.0.0-python-3.11.13   # DTU Gurobi 13 + license (also loads gurobi/13.0.0)
 
 if [ ! -d .venv ]; then
     echo "No .venv found in $(pwd). Create it once on the login node (see README_HPC.md)." >&2
