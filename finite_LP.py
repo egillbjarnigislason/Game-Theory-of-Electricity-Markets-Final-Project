@@ -3,7 +3,7 @@ import pyomo.environ as pyo
 def replace_action(a, i, w, a_i_true):
     # Replace the i-th action in the joint action a with new_value
     new_a = list(a)
-    new_a[i] = tuple([w * x for x in a_i_true])
+    new_a[i] = tuple([pyo.value(w) * x for x in a_i_true])
     return tuple(new_a)
 
 def create_finite_LP(case, a_true, C, c, H_subset):
@@ -12,7 +12,8 @@ def create_finite_LP(case, a_true, C, c, H_subset):
 
     # parameters
     model.w = pyo.Param(initialize=1.0, mutable=True)
-    model.generators = pyo.Set(initialize=range(len(case.gen)))
+    players = [g for g, gen in enumerate(case.gen) if gen.Pmax > 0]
+    model.generators = pyo.Set(initialize=players)
 
     # variables
     model.p = pyo.Var(domain=pyo.NonNegativeReals)
