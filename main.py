@@ -1,3 +1,4 @@
+import sys
 import time
 import random
 
@@ -10,8 +11,9 @@ import finite_LP as flp
 import separation_oracle as so
 
 
-ieee_file = "ieee data/pglib_opf_case14_ieee.m"
-max_time_in_seconds = 200
+# usage: python main.py [case file] [time limit in seconds]   (defaults below are used if not given)
+ieee_file = sys.argv[1] if len(sys.argv) > 1 else "ieee data/pglib_opf_case14_ieee.m"
+max_time_in_seconds = float(sys.argv[2]) if len(sys.argv) > 2 else 200
 accuracy = 10**-2
 starting_H_subset_size = 10 
 minimum_bid_val = 10**-3
