@@ -76,8 +76,9 @@ omega_left = min_b / min([case.gencost[g].params[-2] for g in players if case.ge
 omega_right = max_b / max([case.gencost[g].params[-2] for g in players if case.gencost[g].params[-2] > 0])
 
 
-H_subset = set([tuple([(random.uniform(min_a, max_a), random.uniform(min_b, max_b)) for _ in players]) for i in range(starting_H_subset_size)])
-a_star = tuple([tuple([case.gencost[g].params[-3], case.gencost[g].params[-2]]) for g in players])
+# one bid per GENERATOR (bid number g belongs to generator g); SYNC units get (min_a, min_b), which the market ignores
+H_subset = set([tuple([(random.uniform(min_a, max_a), random.uniform(min_b, max_b)) if g in players else (min_a, min_b) for g in range(len(case.gen))]) for i in range(starting_H_subset_size)])
+a_star = tuple([tuple([case.gencost[g].params[-3], case.gencost[g].params[-2]]) for g in range(len(case.gen))])
 epsilon = accuracy * C(a_star)
 val = float('inf')
 k = 0

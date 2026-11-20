@@ -13,10 +13,11 @@ def create_full_set_of_actions(case, num_steps, min_a, max_a, min_b, max_b):
     # Create a list of all possible actions for each generator
     possible_actions_for_each_generator = [(a, b) for a in a_possible for b in b_possible]
 
-    num_generators = sum(1 for g in case.gen if g.Pmax > 0)
+    # one bid per GENERATOR (bid number g belongs to generator g); SYNC units (Pmax = 0) only get (min_a, min_b)
+    options_per_generator = [possible_actions_for_each_generator if g.Pmax > 0 else [(min_a, min_b)] for g in case.gen]
 
     # Create the full set of joint actions by taking the Cartesian product of the possible actions for each generator
-    full_set_of_joint_actions = list(itertools.product(possible_actions_for_each_generator, repeat=num_generators))
+    full_set_of_joint_actions = list(itertools.product(*options_per_generator))
 
     return full_set_of_joint_actions
 
@@ -84,7 +85,7 @@ def create_discrete_cce_lp(case, actions, a_star, C, c):
             constraint_expr = 0
             for index, joint_action in enumerate(action_list):
                 deviated_action = replace_action(
-                    joint_action, player_position, deviation
+                    joint_action, player, deviation
                 )
                 constraint_expr += model.profile_probability[index] * (
                     player_cost[index][player]
