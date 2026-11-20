@@ -1,0 +1,6 @@
+Iteration:  1
+Val:  2.8471276891650632e-08
+poa_bound (under configured nodal-price bounds):  1.4514099068575625
+Iterations:  1
+Number of joint actions in the discrete bid set:  625
+CCE poa_bound (under discrete bid set):  1.4414099068714539
