@@ -1,6 +1,7 @@
 import sys
 import time
 import random
+import threading
 
 from read_ieee_case import read_case
 from market_constraints import build_constraints
@@ -112,11 +113,19 @@ else:
 print("Iterations: ", k)
 
 
+def run_discrete_bid_model():
+    full_set_of_actions = dbm.create_full_set_of_actions(
+        case, num_steps_for_discrete_bid, min_a, max_a, min_b, max_b
+    )
+    print("Number of joint actions in the discrete bid set: ", len(full_set_of_actions))
 
-full_set_of_actions = dbm.create_full_set_of_actions(case, num_steps_for_discrete_bid, min_a, max_a, min_b, max_b)
-print("Number of joint actions in the discrete bid set: ", len(full_set_of_actions))
+    p = dbm.create_discrete_cce_lp(
+        case, full_set_of_actions, a_star, C, c
+    )
+    print("CCE poa_bound (under discrete bid set): ", p)
 
-p = dbm.create_discrete_cce_lp(case, full_set_of_actions, a_star, C, c)
 
+dbm_thread = threading.Thread(target=run_discrete_bid_model, daemon=True)
+dbm_thread.start()
+dbm_thread.join(max_time_in_seconds)
 
-print("CCE poa_bound (under discrete bid set): ", p)
