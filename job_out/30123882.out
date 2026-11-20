@@ -1,0 +1,104 @@
+Job 30123882 on n-62-29-22, cores=4, case='ieee data/pglib_opf_case14_ieee.m', soft limit=10800s
+Fri Nov 20 00:14:14 CET 2026
+main.py exited with status 0
+Fri Nov 20 00:14:21 CET 2026
+Iteration:  1
+Val:  1.9636900105979294e-08
+poa_bound (under configured nodal-price bounds):  1.4514099068618687
+Iterations:  1
+Number of joint actions in the discrete bid set:  625
+CCE poa_bound (under discrete bid set):  1.4414099068714619
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 30123882: <poa_30> in cluster <dcc> Done
+
+Job <poa_30> was submitted from host <hpclogin1> by user <s252929> in cluster <dcc> at Fri Nov 20 00:14:11 2026
+Job was executed on host(s) <4*n-62-29-22>, in queue <hpc>, as user <s252929> in cluster <dcc> at Fri Nov 20 00:14:13 2026
+</zhome/52/3/223146> was used as the home directory.
+</zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project> was used as the working directory.
+Started at Fri Nov 20 00:14:13 2026
+Terminated at Fri Nov 20 00:14:21 2026
+Results reported at Fri Nov 20 00:14:21 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+# LSF job script: runs main.py for ONE case file.
+# Submit with:   CASE="ieee data/pglib_opf_case14_ieee.m" bsub < run_case.sh
+# (or use submit_all.sh). Directives below are the defaults; command-line bsub options override them.
+
+#BSUB -J poa_case
+#BSUB -q hpc
+#BSUB -n 4
+#BSUB -R "span[hosts=1]"
+#BSUB -R "rusage[mem=4GB]"
+#BSUB -M 5GB
+#BSUB -W 04:00
+#BSUB -o job_out/%J.out
+#BSUB -e job_out/%J.err
+
+# ---- settings -------------------------------------------------------------
+CASE="${CASE:-ieee data/pglib_opf_case14_ieee.m}"
+# Soft limit in seconds. main.py only checks it BETWEEN cutting-plane iterations,
+# so keep it well below the hard -W limit (4h = 14400 s) to leave room for one long oracle solve.
+SOFT_LIMIT="${SOFT_LIMIT:-10800}"
+# ---------------------------------------------------------------------------
+
+cd "$LS_SUBCWD" || exit 1        # directory bsub was called from (the repo folder)
+
+module load python3/3.11.13      # modules do not persist between sessions, so load them in the job
+module load gurobipy/gurobi-13.0.0-python-3.11.13   # DTU Gurobi 13 + license (also loads gurobi/13.0.0)
+
+if [ ! -d .venv ]; then
+    echo "No .venv found in $(pwd). Create it once on the login node (see README_HPC.md)." >&2
+    exit 1
+fi
+source .venv/bin/activate
+
+# Every job gets its own working directory so Gurobi temp/log files never collide,
+# and Gurobi is told to use exactly the cores LSF gave us (default would grab all cores on the node).
+RUN_DIR="runs/${LSB_JOBID}_$(basename "$CASE" .m)"
+mkdir -p "$RUN_DIR"
+export NTHREADS="${LSB_DJOB_NUMPROC:-4}"
+cat > "$RUN_DIR/gurobi.env" <<ENV
+Threads $NTHREADS
+ENV
+
+echo "Job $LSB_JOBID on $(hostname), cores=$NTHREADS, case='$CASE', soft limit=${SOFT_LIMIT}s"
+date
+
+# Run from RUN_DIR (gurobi.env is read from cwd); main.py and the case file are referenced by absolute path.
+REPO="$(pwd)"
+cd "$RUN_DIR"
+python -u "$REPO/main.py" "$REPO/$CASE" "$SOFT_LIMIT" > result.txt 2>&1
+STATUS=$?
+
+(... more ...)
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   6.02 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     16384.00 MB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   8 sec.
+    Turnaround time :                            10 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <job_out/30123882.err> for stderr output of this job.
+

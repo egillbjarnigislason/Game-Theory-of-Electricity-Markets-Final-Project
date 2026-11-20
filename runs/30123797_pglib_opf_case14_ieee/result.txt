@@ -1,0 +1,21 @@
+Iteration:  1
+Traceback (most recent call last):
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/main.py", line 99, in <module>
+    (new_a, val) = so.separation_oracle(separation_oracle_model, p, v, w, epsilon)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/separation_oracle.py", line 399, in separation_oracle
+    model = runModel(model, BestObjStop=epsilon)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/separation_oracle.py", line 36, in runModel
+    results = solver.solve(model, tee=addprint, load_solutions=False)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/.venv/lib/python3.11/site-packages/pyomo/opt/base/solvers.py", line 639, in solve
+    _status = self._apply_solver()
+              ^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/.venv/lib/python3.11/site-packages/pyomo/solvers/plugins/solvers/GUROBI.py", line 707, in _apply_solver
+    self._soln = GUROBI_RUN.gurobi_run(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/.venv/lib/python3.11/site-packages/pyomo/solvers/plugins/solvers/GUROBI_RUN.py", line 118, in gurobi_run
+    model.optimize()
+  File "src/gurobipy/_model.pyx", line 1032, in gurobipy._model.Model.optimize
+gurobipy._exception.GurobiError: Model too large for size-limited license; visit https://gurobi.com/unrestricted for more information

@@ -1,0 +1,11 @@
+Loaded dependency [python3/3.11.13]: sqlite3/3.50.1
+Loaded dependency [python3/3.11.13]: gcc/14.3.0-binutils-2.44
+Loaded module: python3/3.11.13
+
+Loading python3/3.11.13
+  Loading requirement: sqlite3/3.50.1 gcc/14.3.0-binutils-2.44
+Loaded dependency [gurobipy/gurobi-13.0.0-python-3.11.13]: gurobi/13.0.0
+Loaded module: gurobipy/gurobi-13.0.0-python-3.11.13
+
+Loading gurobipy/gurobi-13.0.0-python-3.11.13
+  Loading requirement: gurobi/13.0.0

@@ -1,0 +1,113 @@
+Job 30123797 on n-62-31-16, cores=4, case='ieee data/pglib_opf_case14_ieee.m', soft limit=10800s
+Fri Nov 20 00:00:01 CET 2026
+main.py exited with status 1
+Fri Nov 20 00:00:07 CET 2026
+    model = runModel(model, BestObjStop=epsilon)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/separation_oracle.py", line 36, in runModel
+    results = solver.solve(model, tee=addprint, load_solutions=False)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/.venv/lib/python3.11/site-packages/pyomo/opt/base/solvers.py", line 639, in solve
+    _status = self._apply_solver()
+              ^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/.venv/lib/python3.11/site-packages/pyomo/solvers/plugins/solvers/GUROBI.py", line 707, in _apply_solver
+    self._soln = GUROBI_RUN.gurobi_run(
+                 ^^^^^^^^^^^^^^^^^^^^^^
+  File "/zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project/.venv/lib/python3.11/site-packages/pyomo/solvers/plugins/solvers/GUROBI_RUN.py", line 118, in gurobi_run
+    model.optimize()
+  File "src/gurobipy/_model.pyx", line 1032, in gurobipy._model.Model.optimize
+gurobipy._exception.GurobiError: Model too large for size-limited license; visit https://gurobi.com/unrestricted for more information
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 30123797: <poa_case> in cluster <dcc> Exited
+
+Job <poa_case> was submitted from host <hpclogin1> by user <s252929> in cluster <dcc> at Thu Nov 19 23:59:57 2026
+Job was executed on host(s) <4*n-62-31-16>, in queue <hpc>, as user <s252929> in cluster <dcc> at Fri Nov 20 00:00:00 2026
+</zhome/52/3/223146> was used as the home directory.
+</zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project> was used as the working directory.
+Started at Fri Nov 20 00:00:00 2026
+Terminated at Fri Nov 20 00:00:07 2026
+Results reported at Fri Nov 20 00:00:07 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+# LSF job script: runs main.py for ONE case file.
+# Submit with:   CASE="ieee data/pglib_opf_case14_ieee.m" bsub < run_case.sh
+# (or use submit_all.sh). Directives below are the defaults; command-line bsub options override them.
+
+#BSUB -J poa_case
+#BSUB -q hpc
+#BSUB -n 4
+#BSUB -R "span[hosts=1]"
+#BSUB -R "rusage[mem=4GB]"
+#BSUB -M 5GB
+#BSUB -W 04:00
+#BSUB -o job_out/%J.out
+#BSUB -e job_out/%J.err
+
+# ---- settings -------------------------------------------------------------
+CASE="${CASE:-ieee data/pglib_opf_case14_ieee.m}"
+# Soft limit in seconds. main.py only checks it BETWEEN cutting-plane iterations,
+# so keep it well below the hard -W limit (4h = 14400 s) to leave room for one long oracle solve.
+SOFT_LIMIT="${SOFT_LIMIT:-10800}"
+# ---------------------------------------------------------------------------
+
+cd "$LS_SUBCWD" || exit 1        # directory bsub was called from (the repo folder)
+
+module load python3/3.11.13      # modules do not persist between sessions, so load them in the job
+# If DTU has a Gurobi module (check: module avail gurobi) load it here, e.g.:
+# module load gurobi/<version>
+
+if [ ! -d .venv ]; then
+    echo "No .venv found in $(pwd). Create it once on the login node (see README_HPC.md)." >&2
+    exit 1
+fi
+source .venv/bin/activate
+
+# Every job gets its own working directory so Gurobi temp/log files never collide,
+# and Gurobi is told to use exactly the cores LSF gave us (default would grab all cores on the node).
+RUN_DIR="runs/${LSB_JOBID}_$(basename "$CASE" .m)"
+mkdir -p "$RUN_DIR"
+export NTHREADS="${LSB_DJOB_NUMPROC:-4}"
+cat > "$RUN_DIR/gurobi.env" <<ENV
+Threads $NTHREADS
+ENV
+
+echo "Job $LSB_JOBID on $(hostname), cores=$NTHREADS, case='$CASE', soft limit=${SOFT_LIMIT}s"
+date
+
+# Run from RUN_DIR (gurobi.env is read from cwd); main.py and the case file are referenced by absolute path.
+REPO="$(pwd)"
+cd "$RUN_DIR"
+python -u "$REPO/main.py" "$REPO/$CASE" "$SOFT_LIMIT" > result.txt 2>&1
+
+(... more ...)
+------------------------------------------------------------
+
+Exited with exit code 1.
+
+Resource usage summary:
+
+    CPU time :                                   2.60 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     16384.00 MB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   7 sec.
+    Turnaround time :                            10 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <job_out/30123797.err> for stderr output of this job.
+

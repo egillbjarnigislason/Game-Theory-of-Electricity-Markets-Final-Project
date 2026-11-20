@@ -1,0 +1,101 @@
+host: n-62-31-4
+GRB_LICENSE_FILE=/appl/gurobi/etc/gurobi.lic
+PYTHONPATH=/appl/gurobi/gurobi1300/linux64/lib/python3.11_utf32/
+gurobipy from /appl/gurobi/gurobi1300/linux64/lib/python3.11_utf32/gurobipy/__init__.py (13, 0, 0)
+token server reachable
+Set parameter TSPort to value 4195
+Set parameter TokenServer to value "license1.cc.dtu.dk"
+Gurobi Optimizer version 13.0.0 build v13.0.0rc1 (linux64 - "AlmaLinux 9.8 (Olive Jaguar)")
+
+CPU model: Intel(R) Xeon(R) Gold 6126 CPU @ 2.60GHz, instruction set [SSE2|AVX|AVX2|AVX512]
+Thread count: 24 physical cores, 24 logical processors, using up to 24 threads
+
+Non-default parameters:
+TSPort  4195
+
+Optimize a model with 0 rows, 3000 columns and 0 nonzeros (Max)
+Model fingerprint: 0x39b35eab
+Model has 3000 linear objective coefficients
+Coefficient statistics:
+  Matrix range     [0e+00, 0e+00]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [0e+00, 0e+00]
+Presolve removed 0 rows and 3000 columns
+Presolve time: 0.02s
+Presolve: All rows and columns removed
+Iteration    Objective       Primal Inf.    Dual Inf.      Time
+       0    3.0000000e+03   0.000000e+00   0.000000e+00      0s
+
+Solved in 0 iterations and 0.03 seconds (0.00 work units)
+Optimal objective  3.000000000e+03
+FULL LICENSE OK
+
+------------------------------------------------------------
+Sender: LSF System <lsfadmin@hpc.dtu.dk>
+Subject: Job 30123847: <lic_test> in cluster <dcc> Done
+
+Job <lic_test> was submitted from host <hpclogin1> by user <s252929> in cluster <dcc> at Fri Nov 20 00:04:38 2026
+Job was executed on host(s) <n-62-31-4>, in queue <hpc>, as user <s252929> in cluster <dcc> at Fri Nov 20 00:04:39 2026
+</zhome/52/3/223146> was used as the home directory.
+</zhome/52/3/223146/Game-Theory-of-Electricity-Markets-Final-Project> was used as the working directory.
+Started at Fri Nov 20 00:04:39 2026
+Terminated at Fri Nov 20 00:04:42 2026
+Results reported at Fri Nov 20 00:04:42 2026
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#BSUB -J lic_test
+#BSUB -q hpc
+#BSUB -n 1
+#BSUB -R "rusage[mem=1GB]"
+#BSUB -W 00:05
+#BSUB -o job_out/lic_%J.out
+#BSUB -e job_out/lic_%J.err
+cd "$LS_SUBCWD"
+module load python3/3.11.13
+module load gurobipy/gurobi-13.0.0-python-3.11.13
+source .venv/bin/activate
+echo "host: $(hostname)"
+echo "GRB_LICENSE_FILE=$GRB_LICENSE_FILE"
+echo "PYTHONPATH=$PYTHONPATH"
+python - <<'PY'
+import gurobipy, socket
+print("gurobipy from", gurobipy.__file__, gurobipy.gurobi.version())
+try:
+    socket.create_connection(("license1.cc.dtu.dk", 4195), 5).close()
+    print("token server reachable")
+except Exception as e:
+    print("token server NOT reachable:", e)
+m = gurobipy.Model(); x = m.addVars(3000, ub=1.0)
+m.setObjective(x.sum(), gurobipy.GRB.MAXIMIZE); m.optimize()
+print("FULL LICENSE OK")
+PY
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   0.90 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     1024.00 MB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              -
+    Max Threads :                                -
+    Run time :                                   3 sec.
+    Turnaround time :                            4 sec.
+
+The output (if any) is above this job summary.
+
+
+
+PS:
+
+Read file <job_out/lic_30123847.err> for stderr output of this job.
+
